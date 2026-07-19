@@ -1,0 +1,83 @@
+#include <iostream>
+#include <cstdint>
+#include <string>
+#include <vector>
+#include <cmath>
+
+#include <raylib.h>
+
+int main(int, char *[])
+{
+  InitWindow(720, 720, "Chess 2.0");
+  SetTargetFPS(60);
+
+  Texture2D
+    hand_texture = LoadTexture("asset/hand.png"),
+    item_texture = LoadTexture("asset/default.png");
+
+  float hand_rotation = -110.f;
+  bool swing_animation = false;
+
+  Rectangle player = { static_cast<float>(GetScreenWidth()) / 2.f - 16.f, static_cast<float>(GetScreenHeight()) / 2.f - 32.f, 32.f, 64.f };
+
+  while(!WindowShouldClose())
+  {
+    Vector2 mouse_position = GetMousePosition();
+
+    if(IsKeyDown(KEY_D))
+    {
+      player.x += 4;
+    }
+    if(IsKeyDown(KEY_A))
+    {
+      player.x -= 4;
+    }
+    if(IsMouseButtonDown(MOUSE_BUTTON_LEFT))
+    {
+      if(!swing_animation)
+        hand_rotation = -110.f;
+      swing_animation = true;
+    }
+
+    if(swing_animation)
+    {
+      hand_rotation += 10.f;
+
+      if(hand_rotation >= 70.f)
+      {
+        hand_rotation = 0.f;
+        swing_animation = false;
+      }
+    }
+
+    hand_rotation += GetMouseWheelMove() * 10.f;
+    
+    Rectangle hand = { player.x + 32.f, player.y, 32.f, 32.f };
+    Rectangle item = hand;
+
+    item.x += 4.f;
+    item.y -= 16.f;
+    float item_rotation = hand_rotation - 32.f;
+
+    BeginDrawing();
+    ClearBackground(BLACK);
+    
+    DrawRectanglePro(player, Vector2 { 0.f, 0.f }, 0.f, GRAY);
+
+    DrawTexturePro(hand_texture, Rectangle { 0.f, 0.f, 32.f, 32.f }, hand, Vector2 { 0.f, 0.f }, hand_rotation, WHITE);
+    DrawTexturePro(item_texture, Rectangle { 8.f * 5.f, 8.f * 7.f, 8.f, 8.f }, item, Vector2 { 0.f, 0.f }, item_rotation, WHITE);
+
+    DrawText(("hand-angle: " + std::to_string(hand_rotation)).c_str(), 4, 4, 32, WHITE);
+
+    EndMode2D();
+    EndDrawing();
+  }
+
+  UnloadTexture(hand_texture);
+  UnloadTexture(item_texture);
+
+  CloseWindow();
+
+
+  return EXIT_SUCCESS;
+}
